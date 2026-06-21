@@ -1,0 +1,104 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "username": "admin",
+      "password": "$2a$10$/XTdwdp7PWiJPge2YKHqf.INA8Py/oEf.TjqfF0uafvdvEv6pUTkK",
+      "email": "admin@test.com",
+      "role": "admin"
+    }
+  ],
+  "posts": [
+    {
+      "id": "2648876c-34f9-45a6-aa2e-1249051e4da4",
+      "title": "primoPost",
+      "content": "contenuto del primo post",
+      "type": "image",
+      "tags": [
+        "balcone"
+      ],
+      "mediaUrls": [
+        "/uploads/1780402356910-11_01_2026_canna_fumaria_1.jpeg"
+      ],
+      "date": "2026-06-02T12:12:36.924Z",
+      "published": true
+    },
+    {
+      "id": "61a66821-746b-44da-8101-f66207c07805",
+      "title": "video non video",
+      "content": "nessun video",
+      "type": "video",
+      "tags": [
+        "secondo post martedì"
+      ],
+      "mediaUrls": [],
+      "date": "2026-06-02T12:15:59.426Z",
+      "published": true
+    },
+    {
+      "id": "adf07ab6-8f0b-4a6f-b49b-c7be60ca203b",
+      "title": "a",
+      "content": "b",
+      "type": "image",
+      "tags": [
+        "c"
+      ],
+      "mediaUrls": [],
+      "date": "2026-06-06T12:37:32.496Z",
+      "published": true
+    }
+  ],
+  "settings": {
+    "site_name": "ADRIAN",
+    "bio": "Sono un creativo digitale appassionato di fotografia, videoarte e graphic design.",
+    "contact_email": "adrian82gavril@gmail.com",
+    "gdpr_text": "Questo sito rispetta il GDPR 2026."
+  },
+  "comments": [
+    {
+      "id": "1780260932403",
+      "post_id": "afd0d64d-ea4e-4e15-a80b-212a91e84018",
+      "author_name": "io",
+      "author_email": "mail@mail.it",
+      "content": "commento",
+      "status": "approved",
+      "created_at": "2026-05-31T20:55:32.403Z"
+    },
+    {
+      "id": "1780261916865",
+      "post_id": "801677c3-2840-4dc2-ad0b-0aac89ae003d",
+      "author_name": "b",
+      "author_email": "b@b.com",
+      "content": "commento",
+      "status": "approved",
+      "created_at": "2026-05-31T21:11:56.865Z"
+    },
+    {
+      "id": "1780261988712",
+      "post_id": "801677c3-2840-4dc2-ad0b-0aac89ae003d",
+      "author_name": "f",
+      "author_email": "f@f.com",
+      "content": "commento f",
+      "status": "approved",
+      "created_at": "2026-05-31T21:13:08.712Z"
+    },
+    {
+      "id": "1780308403843",
+      "post_id": "afd0d64d-ea4e-4e15-a80b-212a91e84018",
+      "author_name": "adrian",
+      "author_email": "a@a.com",
+      "content": "zero",
+      "status": "approved",
+      "created_at": "2026-06-01T10:06:43.843Z"
+    },
+    {
+      "id": "1780402413893",
+      "post_id": "2648876c-34f9-45a6-aa2e-1249051e4da4",
+      "author_name": "io",
+      "author_email": "a@a.com",
+      "content": "commento",
+      "status": "approved",
+      "created_at": "2026-06-02T12:13:33.893Z"
+    }
+  ]
+}
