@@ -1050,10 +1050,15 @@ function Login({ setToken }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("/api/login", { username, password });
+      const res = await axios.post(
+        "https://webapp-with-chat.onrender.com/api/login",
+        { username, password },
+      );
+
       localStorage.setItem("token", res.data.token);
       setToken(res.data.token);
       navigate("/dashboard");
@@ -1061,6 +1066,7 @@ function Login({ setToken }) {
       alert("Credenziali errate");
     }
   };
+
   return (
     <div
       style={{
@@ -1077,6 +1083,7 @@ function Login({ setToken }) {
       >
         Login Admin
       </h1>
+
       <form onSubmit={handleSubmit}>
         <input
           type="text"
@@ -1091,6 +1098,7 @@ function Login({ setToken }) {
             borderRadius: "4px",
           }}
         />
+
         <input
           type="password"
           placeholder="Password"
@@ -1104,6 +1112,7 @@ function Login({ setToken }) {
             borderRadius: "4px",
           }}
         />
+
         <button
           type="submit"
           style={{
@@ -1119,6 +1128,7 @@ function Login({ setToken }) {
           Accedi
         </button>
       </form>
+
       <p style={{ textAlign: "center", fontSize: "12px", marginTop: "16px" }}>
         admin / admin123
       </p>
@@ -1218,15 +1228,22 @@ function Dashboard({ token }) {
 
     form.mediaFiles.forEach((file) => fd.append("media", file));
 
+    // 🔧 SALVATAGGIO POST (create + update)
     try {
       if (editingId) {
         const replace = confirm("Vuoi SOSTITUIRE le immagini esistenti?");
         fd.append("replaceMedia", replace);
-        await axios.put(`/api/posts/${editingId}`, fd);
+
+        await axios.put(
+          `https://webapp-with-chat.onrender.com/api/posts/${editingId}`,
+          fd,
+        );
+
         alert("Post modificato con successo!");
       } else {
-        await axios.post("/api/posts", fd);
+        await axios.post("https://webapp-with-chat.onrender.com/api/posts", fd);
       }
+
       cancelEdit();
       await fetchData();
     } catch (error) {
@@ -1237,48 +1254,67 @@ function Dashboard({ token }) {
     }
   };
 
+  // 🔧 CANCELLAZIONE POST
   const handleDeletePost = async (id) => {
     if (confirm("Cancellare questo post?")) {
-      await axios.delete(`/api/posts/${id}`);
+      await axios.delete(
+        `https://webapp-with-chat.onrender.com/api/posts/${id}`,
+      );
       await fetchData();
     }
   };
 
+  // 🔧 SALVATAGGIO SETTINGS
   const handleSaveSettings = async () => {
-    await axios.put("/api/settings", settings);
+    await axios.put(
+      "https://webapp-with-chat.onrender.com/api/settings",
+      settings,
+    );
     alert("Impostazioni salvate!");
   };
 
+  // 🔧 APPROVA COMMENTO
   const approveComment = async (id) => {
-    await axios.put(`/api/admin/comments/${id}/approve`);
+    await axios.put(
+      `https://webapp-with-chat.onrender.com/api/admin/comments/${id}/approve`,
+    );
+
     setPendingComments(pendingComments.filter((c) => c.id !== id));
     alert("Commento approvato!");
   };
 
+  // 🔧 RIFIUTA COMMENTO
   const rejectComment = async (id) => {
     if (
       confirm("Rifiutare questo commento? Verrà eliminato permanentemente.")
     ) {
-      await axios.delete(`/api/admin/comments/${id}`);
+      await axios.delete(
+        `https://webapp-with-chat.onrender.com/api/admin/comments/${id}`,
+      );
+
       setPendingComments(pendingComments.filter((c) => c.id !== id));
       alert("Commento rifiutato ed eliminato");
     }
   };
-
+  // 🔧 ESPORTAZIONE GDPR
   const exportData = async () => {
-    const res = await axios.get("/api/gdpr/export");
+    const res = await axios.get(
+      "https://webapp-with-chat.onrender.com/api/gdpr/export",
+    );
+
     const dataStr = JSON.stringify(res.data, null, 2);
     const blob = new Blob([dataStr], { type: "application/json" });
     const url = URL.createObjectURL(blob);
+
     const a = document.createElement("a");
     a.href = url;
     a.download = `gdpr-export-${new Date().toISOString()}.json`;
     a.click();
+
     URL.revokeObjectURL(url);
   };
 
   if (!token) return <div>Caricamento...</div>;
-
   return (
     <div>
       <h1

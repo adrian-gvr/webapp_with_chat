@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import cors from "cors";
 import multer from "multer";
@@ -12,8 +15,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 5001;
-const JWT_SECRET = "my-super-secret-key-2026";
+// const PORT = process.env.PORT || 5001;
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const UPLOADS_DIR = path.join(__dirname, "../uploads");
 const DATA_FILE = path.join(__dirname, "../database.json");
@@ -31,7 +34,7 @@ const server = http.createServer(app);
 // CREA SERVER SOCKET.IO
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5175", // porta del tuo frontend
+    origin: "https://webapp-with-chat-1.onrender.com",
     methods: ["GET", "POST"],
   },
 });
@@ -342,11 +345,7 @@ app.put("/api/admin/comments/:id/reject", auth, (req, res) => {
   res.json({ success: true });
 });
 
-// app.listen(PORT, "0.0.0.0", () => {
-//   console.log(`🚀 Server su http://localhost:${PORT}`);
-//   console.log(`🔐 admin / admin123`);
-// });
-// AVVIA SERVER HTTP (NON app.listen)
-server.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Server su http://localhost:${PORT}`);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
