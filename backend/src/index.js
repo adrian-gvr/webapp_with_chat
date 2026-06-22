@@ -122,6 +122,8 @@ app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static(UPLOADS_DIR));
 
+app.use("/api/auth", require("../routes/auth.js"));
+
 app.get("/", (req, res) => {
   res.send("Backend attivo su Render 🚀");
 });
