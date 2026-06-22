@@ -1,6 +1,9 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+// console.log("DEBUG ENV:", process.env);
+// console.log("DEBUG MONGO_URI:", process.env.MONGO_URI);
+
 import express from "express";
 import cors from "cors";
 import multer from "multer";
@@ -10,6 +13,13 @@ import { v4 as uuidv4 } from "uuid";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+
+import mongoose from "mongoose";
+
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ MongoDB Atlas connesso"))
+  .catch((err) => console.error("❌ Errore connessione MongoDB:", err));
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
