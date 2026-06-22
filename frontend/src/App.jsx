@@ -1296,6 +1296,7 @@ function Dashboard({ token }) {
       alert("Commento rifiutato ed eliminato");
     }
   };
+
   // 🔧 ESPORTAZIONE GDPR
   const exportData = async () => {
     const res = await axios.get(
@@ -1315,6 +1316,7 @@ function Dashboard({ token }) {
   };
 
   if (!token) return <div>Caricamento...</div>;
+
   return (
     <div>
       <h1
