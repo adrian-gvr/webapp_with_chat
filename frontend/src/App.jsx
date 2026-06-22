@@ -192,7 +192,10 @@ function AppContent({ token, setToken, user, logout }) {
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/post/:id" element={<PostDetail />} />
 
-          <Route path="/chat" element={<ChatPage />} />
+          <Route
+            path="/chat"
+            element={<ChatPage token={token} user={user} />}
+          />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
