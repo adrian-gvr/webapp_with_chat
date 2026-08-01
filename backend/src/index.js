@@ -13,6 +13,7 @@ import { v4 as uuidv4 } from "uuid";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import authRoutes from "./routes/auth.js";
 
 import mongoose from "mongoose";
 
@@ -122,7 +123,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static(UPLOADS_DIR));
 
-app.use("/api/auth", require("../routes/auth.js"));
+app.use("/api/auth", authRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend attivo su Render 🚀");

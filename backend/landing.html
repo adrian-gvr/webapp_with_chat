@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Habits Master</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #f4f4f4;
+        color: #333;
+      }
+      header {
+        background: #3498db;
+        color: #fff;
+        padding: 20px;
+        text-align: center;
+      }
+      h1 {
+        margin: 0;
+        font-size: 2.5em;
+        animation: fadeIn 2s;
+      }
+      h2 {
+        font-weight: lighter;
+        margin: 10px 0;
+        animation: fadeIn 2s;
+      }
+      .cta-button {
+        background: #fff;
+        color: #3498db;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1.2em;
+        transition: all 0.3s ease;
+        animation: bounceIn 2s;
+      }
+      .cta-button:hover {
+        background: #3498db;
+        color: #fff;
+      }
+      .features {
+        display: flex;
+        justify-content: space-around;
+        margin: 20px;
+      }
+      .feature {
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin: 10px;
+        width: 30%;
+        transition: transform 0.3s;
+      }
+      .feature:hover {
+        transform: scale(1.05);
+      }
+      footer {
+        text-align: center;
+        padding: 20px;
+        background: #3498db;
+        color: #fff;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes bounceIn {
+        0% {
+          transform: scale(0);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Trasforma le tue abitudini!</h1>
+      <h2>
+        Scopri come piccoli cambiamenti quotidiani possono portare a grandi
+        risultati!
+      </h2>
+      <button class="cta-button" onclick="scrollToFeatures()">
+        Inizia Ora
+      </button>
+    </header>
+
+    <section class="features" id="features">
+      <div class="feature">
+        <h3>Pianificazione Intelligente</h3>
+        <p>Pianifica le tue abitudini in modo semplice e intuitivo.</p>
+      </div>
+      <div class="feature">
+        <h3>Monitoraggio dei Progressi</h3>
+        <p>Osserva i tuoi miglioramenti e celebra i tuoi successi!</p>
+      </div>
+      <div class="feature">
+        <h3>Consigli Personalizzati</h3>
+        <p>Ricevi suggerimenti su misura per te e i tuoi obiettivi.</p>
+      </div>
+    </section>
+
+    <footer>
+      <p>Copyright © 2023 Habits Master | Seguici sui social!</p>
+    </footer>
+
+    <script>
+      function scrollToFeatures() {
+        document
+          .getElementById("features")
+          .scrollIntoView({ behavior: "smooth" });
+      }
+    </script>
+  </body>
+</html>
