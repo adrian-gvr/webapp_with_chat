@@ -62,7 +62,7 @@ function CommentsSection({ postId, isAdmin }) {
 
   const handleDelete = async (id, isPending = false) => {
     if (confirm("Eliminare questo commento?")) {
-      await axios.delete(`/api/admin/comments/${id}`);
+      await axios.put(`/api/admin/comments/${id}/reject`);
       if (isPending) {
         setPendingComments(pendingComments.filter((c) => c.id !== id));
       } else {

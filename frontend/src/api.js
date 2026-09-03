@@ -1,0 +1,16 @@
+import axios from "axios";
+
+const configuredApiUrl = import.meta.env.VITE_API_URL;
+const productionApiUrl =
+  window.location.hostname.endsWith("onrender.com")
+    ? "https://webapp-with-chat.onrender.com"
+    : "";
+
+export const apiUrl = (configuredApiUrl || productionApiUrl).replace(/\/$/, "");
+
+axios.defaults.baseURL = apiUrl;
+
+export function mediaUrl(url) {
+  if (!url || /^https?:\/\//i.test(url)) return url;
+  return `${apiUrl}${url}`;
+}

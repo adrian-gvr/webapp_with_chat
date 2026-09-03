@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
-const socket = io("https://webapp-with-chat.onrender.com", {
+const socket = io({
   autoConnect: false,
 });
 

@@ -17,17 +17,19 @@ import authRoutes from "./routes/auth.js";
 
 import mongoose from "mongoose";
 
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB Atlas connesso"))
-  .catch((err) => console.error("❌ Errore connessione MongoDB:", err));
+if (process.env.MONGO_URI) {
+  mongoose
+    .connect(process.env.MONGO_URI)
+    .then(() => console.log("✅ MongoDB Atlas connesso"))
+    .catch((err) => console.error("❌ Errore connessione MongoDB:", err));
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 // const PORT = process.env.PORT || 5001;
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || "local-development-secret";
 
 const UPLOADS_DIR = path.join(__dirname, "../uploads");
 const DATA_FILE = path.join(__dirname, "../database.json");
@@ -45,7 +47,7 @@ const server = http.createServer(app);
 // CREA SERVER SOCKET.IO
 const io = new Server(server, {
   cors: {
-    origin: "https://webapp-with-chat-1.onrender.com",
+    origin: process.env.FRONTEND_URL || "https://webapp-with-chat-1.onrender.com",
     methods: ["GET", "POST"],
   },
 });
@@ -358,7 +360,7 @@ app.put("/api/admin/comments/:id/reject", auth, (req, res) => {
   res.json({ success: true });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

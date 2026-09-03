@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
+import { mediaUrl } from "../api";
 import CommentsSection from "../components/CommentsSection";
 
 function PostDetail() {
@@ -94,7 +95,7 @@ function PostDetail() {
               <div key={idx} style={{ flexShrink: 0 }}>
                 {url.match(/\.(mp4|webm)$/i) ? (
                   <video
-                    src={url}
+                    src={mediaUrl(url)}
                     controls
                     style={{
                       maxWidth: "100%",
@@ -105,7 +106,7 @@ function PostDetail() {
                   />
                 ) : (
                   <img
-                    src={url}
+                    src={mediaUrl(url)}
                     alt={`Media ${idx + 1}`}
                     style={{
                       maxWidth: "100%",
