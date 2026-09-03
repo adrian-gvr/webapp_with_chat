@@ -8,6 +8,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import axios from "axios";
+import { mediaUrl } from "./api";
 import Privacy from "./pages/Privacy";
 import PostDetail from "./pages/PostDetail";
 import NotFound from "./pages/NotFound";
@@ -678,7 +679,7 @@ function Blog() {
                       <div key={idx} style={{ flexShrink: 0 }}>
                         {url.match(/\.(mp4|webm)$/i) ? (
                           <video
-                            src={url}
+                            src={mediaUrl(url)}
                             style={{
                               width: "120px",
                               height: "120px",
@@ -687,7 +688,7 @@ function Blog() {
                           />
                         ) : (
                           <img
-                            src={url}
+                            src={mediaUrl(url)}
                             alt={`Media ${idx + 1}`}
                             style={{
                               width: "120px",
@@ -1058,7 +1059,7 @@ function Login({ setToken }) {
     e.preventDefault();
     try {
       const res = await axios.post(
-        "https://webapp-with-chat.onrender.com/api/login",
+        "/api/login",
         { username, password },
       );
 
@@ -1140,6 +1141,7 @@ function Login({ setToken }) {
 }
 
 function Dashboard({ token }) {
+  const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [settings, setSettings] = useState({});
   const [pendingComments, setPendingComments] = useState([]);
@@ -1156,9 +1158,12 @@ function Dashboard({ token }) {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!token) return;
+    if (!token) {
+      navigate("/login", { replace: true });
+      return;
+    }
     fetchData();
-  }, [token]);
+  }, [token, navigate]);
 
   const fetchData = async () => {
     const postsRes = await axios.get("/api/posts");
@@ -1238,13 +1243,13 @@ function Dashboard({ token }) {
         fd.append("replaceMedia", replace);
 
         await axios.put(
-          `https://webapp-with-chat.onrender.com/api/posts/${editingId}`,
+          `/api/posts/${editingId}`,
           fd,
         );
 
         alert("Post modificato con successo!");
       } else {
-        await axios.post("https://webapp-with-chat.onrender.com/api/posts", fd);
+        await axios.post("/api/posts", fd);
       }
 
       cancelEdit();
@@ -1261,7 +1266,7 @@ function Dashboard({ token }) {
   const handleDeletePost = async (id) => {
     if (confirm("Cancellare questo post?")) {
       await axios.delete(
-        `https://webapp-with-chat.onrender.com/api/posts/${id}`,
+        `/api/posts/${id}`,
       );
       await fetchData();
     }
@@ -1270,7 +1275,7 @@ function Dashboard({ token }) {
   // 🔧 SALVATAGGIO SETTINGS
   const handleSaveSettings = async () => {
     await axios.put(
-      "https://webapp-with-chat.onrender.com/api/settings",
+      "/api/settings",
       settings,
     );
     alert("Impostazioni salvate!");
@@ -1279,7 +1284,7 @@ function Dashboard({ token }) {
   // 🔧 APPROVA COMMENTO
   const approveComment = async (id) => {
     await axios.put(
-      `https://webapp-with-chat.onrender.com/api/admin/comments/${id}/approve`,
+      `/api/admin/comments/${id}/approve`,
     );
 
     setPendingComments(pendingComments.filter((c) => c.id !== id));
@@ -1292,7 +1297,7 @@ function Dashboard({ token }) {
       confirm("Rifiutare questo commento? Verrà eliminato permanentemente.")
     ) {
       await axios.delete(
-        `https://webapp-with-chat.onrender.com/api/admin/comments/${id}`,
+        `/api/admin/comments/${id}`,
       );
 
       setPendingComments(pendingComments.filter((c) => c.id !== id));
@@ -1303,7 +1308,7 @@ function Dashboard({ token }) {
   // 🔧 ESPORTAZIONE GDPR
   const exportData = async () => {
     const res = await axios.get(
-      "https://webapp-with-chat.onrender.com/api/gdpr/export",
+      "/api/gdpr/export",
     );
 
     const dataStr = JSON.stringify(res.data, null, 2);
@@ -1318,7 +1323,7 @@ function Dashboard({ token }) {
     URL.revokeObjectURL(url);
   };
 
-  if (!token) return <div>Caricamento...</div>;
+  if (!token) return null;
 
   return (
     <div>
