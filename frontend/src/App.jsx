@@ -51,13 +51,14 @@ function App() {
         token={token}
         setToken={setToken}
         user={user}
+        setUser={setUser}
         logout={logout}
       />
     </HashRouter>
   );
 }
 
-function AppContent({ token, setToken, user, logout }) {
+function AppContent({ token, setToken, user, setUser, logout }) {
   const { darkMode, setDarkMode } = useTheme();
 
   return (
