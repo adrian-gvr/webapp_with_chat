@@ -18,6 +18,7 @@ import User from "./models/User.js";
 import Post from "./models/Post.js";
 import Comment from "./models/Comment.js";
 import SiteSettings from "./models/SiteSettings.js";
+import Contact from "./models/Contact.js";
 
 import mongoose from "mongoose";
 
@@ -53,10 +54,23 @@ const server = http.createServer(app);
 // CREA SERVER SOCKET.IO
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || "https://webapp-with-chat-1.onrender.com",
+    origin:
+      process.env.FRONTEND_URL || "https://webapp-with-chat-1.onrender.com",
     methods: ["GET", "POST"],
   },
 });
+
+let gridFSBucket;
+
+const getGridFSBucket = async () => {
+  await mongoose.connection.asPromise();
+  if (!gridFSBucket) {
+    gridFSBucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+      bucketName: "uploads",
+    });
+  }
+  return gridFSBucket;
+};
 
 // EVENTI SOCKET.IO
 io.on("connection", (socket) => {
@@ -107,13 +121,41 @@ app.get("/", (req, res) => {
   res.send("Backend attivo su Render 🚀");
 });
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, UPLOADS_DIR),
-  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 },
 });
-const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
 
-const uploadUrl = (filename) => `${PUBLIC_BACKEND_URL}/uploads/${filename}`;
+const uploadUrl = (id) => `${PUBLIC_BACKEND_URL}/api/uploads/${id}`;
+
+const saveUpload = async (file) => {
+  const bucket = await getGridFSBucket();
+  return new Promise((resolve, reject) => {
+    const stream = bucket.openUploadStream(file.originalname, {
+      contentType: file.mimetype,
+      metadata: { size: file.size },
+    });
+    stream.on("error", reject);
+    stream.on("finish", () => resolve(uploadUrl(stream.id)));
+    stream.end(file.buffer);
+  });
+};
+
+app.get("/api/uploads/:id", async (req, res) => {
+  try {
+    const fileId = new mongoose.Types.ObjectId(req.params.id);
+    const bucket = await getGridFSBucket();
+    const files = await bucket.find({ _id: fileId }).toArray();
+    if (!files.length) return res.status(404).json({ error: "File non trovato" });
+
+    res.set("Content-Type", files[0].contentType || "application/octet-stream");
+    bucket.openDownloadStream(fileId).on("error", () => {
+      if (!res.headersSent) res.status(404).end();
+    }).pipe(res);
+  } catch {
+    res.status(400).json({ error: "ID file non valido" });
+  }
+});
 
 const auth = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
@@ -179,7 +221,7 @@ app.post("/api/posts", auth, upload.array("media", 5), async (req, res) => {
   console.log("🔧 BACKEND - Tags ricevuti:", tags); // <-- AGGIUNGI
 
   const mediaUrls = req.files
-    ? req.files.map((f) => uploadUrl(f.filename))
+    ? await Promise.all(req.files.map((file) => saveUpload(file)))
     : [];
   const newPost = {
     id: uuidv4(),
@@ -202,7 +244,7 @@ app.put("/api/posts/:id", auth, upload.array("media", 5), async (req, res) => {
   if (!post) return res.status(404).json({ error: "Post non trovato" });
 
   const newMediaUrls = req.files
-    ? req.files.map((f) => uploadUrl(f.filename))
+    ? await Promise.all(req.files.map((file) => saveUpload(file)))
     : [];
   const replace = replaceMedia === "true";
 
@@ -223,9 +265,12 @@ app.delete("/api/posts/:id", auth, async (req, res) => {
 });
 
 // CONTATTI
-app.post("/api/contacts", (req, res) => {
+app.post("/api/contacts", async (req, res) => {
   const { name, email, message } = req.body;
-  console.log(`📧 Messaggio da ${name} (${email}): ${message}`);
+  if (!name || !email || !message) {
+    return res.status(400).json({ error: "Nome, email e messaggio sono obbligatori" });
+  }
+  await Contact.create({ name, email, message, ip: req.ip });
   res.json({ success: true });
 });
 

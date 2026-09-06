@@ -1,10 +1,9 @@
 import axios from "axios";
 
 const configuredApiUrl = import.meta.env.VITE_API_URL;
-const productionApiUrl =
-  import.meta.env.PROD
-    ? "https://webapp-with-chat.onrender.com"
-    : "";
+const productionApiUrl = import.meta.env.PROD
+  ? "https://webapp-with-chat.onrender.com"
+  : "";
 
 export const apiUrl = (configuredApiUrl || productionApiUrl).replace(/\/$/, "");
 
