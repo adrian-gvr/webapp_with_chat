@@ -17,7 +17,11 @@ const data = JSON.parse(await fs.readFile(DATA_FILE, "utf8"));
 await mongoose.connect(process.env.MONGO_URI);
 
 for (const user of data.users || []) {
-  await User.updateOne({ id: user.id }, { $set: user }, { upsert: true });
+  await User.updateOne(
+    { $or: [{ id: user.id }, { username: user.username }] },
+    { $set: user },
+    { upsert: true },
+  );
 }
 
 for (const post of data.posts || []) {
