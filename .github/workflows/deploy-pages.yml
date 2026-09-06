@@ -36,6 +36,7 @@ jobs:
         working-directory: frontend
         env:
           VITE_API_URL: https://webapp-with-chat.onrender.com
+          VITE_BASE_PATH: /webapp_with_chat/
         run: npm run build
 
       - name: Configure Pages
