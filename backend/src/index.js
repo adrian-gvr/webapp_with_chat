@@ -146,12 +146,16 @@ app.get("/api/uploads/:id", async (req, res) => {
     const fileId = new mongoose.Types.ObjectId(req.params.id);
     const bucket = await getGridFSBucket();
     const files = await bucket.find({ _id: fileId }).toArray();
-    if (!files.length) return res.status(404).json({ error: "File non trovato" });
+    if (!files.length)
+      return res.status(404).json({ error: "File non trovato" });
 
     res.set("Content-Type", files[0].contentType || "application/octet-stream");
-    bucket.openDownloadStream(fileId).on("error", () => {
-      if (!res.headersSent) res.status(404).end();
-    }).pipe(res);
+    bucket
+      .openDownloadStream(fileId)
+      .on("error", () => {
+        if (!res.headersSent) res.status(404).end();
+      })
+      .pipe(res);
   } catch {
     res.status(400).json({ error: "ID file non valido" });
   }
@@ -268,7 +272,9 @@ app.delete("/api/posts/:id", auth, async (req, res) => {
 app.post("/api/contacts", async (req, res) => {
   const { name, email, message } = req.body;
   if (!name || !email || !message) {
-    return res.status(400).json({ error: "Nome, email e messaggio sono obbligatori" });
+    return res
+      .status(400)
+      .json({ error: "Nome, email e messaggio sono obbligatori" });
   }
   await Contact.create({ name, email, message, ip: req.ip });
   res.json({ success: true });

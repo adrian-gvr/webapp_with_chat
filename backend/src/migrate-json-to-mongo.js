@@ -49,7 +49,9 @@ const migrateUpload = async (url) => {
     const buffer = await fs.readFile(sourcePath);
     return await new Promise((resolve, reject) => {
       const stream = bucket.openUploadStream(filename, {
-        contentType: contentTypes[path.extname(filename).toLowerCase()] || "application/octet-stream",
+        contentType:
+          contentTypes[path.extname(filename).toLowerCase()] ||
+          "application/octet-stream",
       });
       stream.on("error", reject);
       stream.on("finish", () =>
