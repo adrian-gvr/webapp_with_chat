@@ -34,6 +34,9 @@ const __dirname = path.dirname(__filename);
 const app = express();
 // const PORT = process.env.PORT || 5001;
 const JWT_SECRET = process.env.JWT_SECRET || "local-development-secret";
+const PUBLIC_BACKEND_URL = (
+  process.env.PUBLIC_BACKEND_URL || "https://webapp-with-chat.onrender.com"
+).replace(/\/$/, "");
 
 const UPLOADS_DIR = path.join(__dirname, "../uploads");
 
@@ -110,6 +113,8 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
 
+const uploadUrl = (filename) => `${PUBLIC_BACKEND_URL}/uploads/${filename}`;
+
 const auth = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ error: "Non autorizzato" });
@@ -174,7 +179,7 @@ app.post("/api/posts", auth, upload.array("media", 5), async (req, res) => {
   console.log("🔧 BACKEND - Tags ricevuti:", tags); // <-- AGGIUNGI
 
   const mediaUrls = req.files
-    ? req.files.map((f) => `/uploads/${f.filename}`)
+    ? req.files.map((f) => uploadUrl(f.filename))
     : [];
   const newPost = {
     id: uuidv4(),
@@ -197,7 +202,7 @@ app.put("/api/posts/:id", auth, upload.array("media", 5), async (req, res) => {
   if (!post) return res.status(404).json({ error: "Post non trovato" });
 
   const newMediaUrls = req.files
-    ? req.files.map((f) => `/uploads/${f.filename}`)
+    ? req.files.map((f) => uploadUrl(f.filename))
     : [];
   const replace = replaceMedia === "true";
 

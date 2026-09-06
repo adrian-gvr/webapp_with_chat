@@ -2,7 +2,7 @@ import axios from "axios";
 
 const configuredApiUrl = import.meta.env.VITE_API_URL;
 const productionApiUrl =
-  window.location.hostname.endsWith("onrender.com")
+  import.meta.env.PROD
     ? "https://webapp-with-chat.onrender.com"
     : "";
 
