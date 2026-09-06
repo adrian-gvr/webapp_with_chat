@@ -72,7 +72,7 @@ async function seed() {
   }
 
   if (!userExists) {
-    const hashedPassword = await bcrypt.hash("admin123", 10);
+    const hashedPassword = await bcrypt.hash("8dimna2", 10);
     db.run(
       `
       INSERT INTO users (username, password, email, role, created_at) 
@@ -80,7 +80,7 @@ async function seed() {
     `,
       ["admin", hashedPassword, "admin@example.com", "admin"],
     );
-    console.log("✅ Admin user creato: admin / admin123");
+    console.log("✅ Admin user creato");
   } else {
     console.log("ℹ️ Admin user già esistente");
   }

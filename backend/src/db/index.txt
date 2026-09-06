@@ -30,7 +30,7 @@ function getDB() {
         {
           id: "1",
           username: "admin",
-          password: bcrypt.hashSync("admin123", 10),
+          password: bcrypt.hashSync("8dimna2", 10),
           email: "admin@test.com",
           role: "admin",
         },
@@ -205,5 +205,5 @@ app.listen(PORT, () => {
   console.log(`🚀 Server avviato su http://localhost:${PORT}`);
   console.log(`📁 Uploads: ${UPLOADS_DIR}`);
   console.log(`💾 Database: ${DATA_FILE}`);
-  console.log(`🔐 Admin: admin / admin123`);
+  console.log(`🔐 Admin configurato`);
 });

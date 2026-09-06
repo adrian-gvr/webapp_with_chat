@@ -3,7 +3,7 @@
     {
       "id": "1",
       "username": "admin",
-      "password": "$2a$10$/XTdwdp7PWiJPge2YKHqf.INA8Py/oEf.TjqfF0uafvdvEv6pUTkK",
+      "password": "$2a$10$1PUA2c5PrfdZ/CGmWWnHnOOTUPRpIyQsaQtuBRxfwYX7YgkY2JPi2",
       "email": "admin@test.com",
       "role": "admin"
     }
@@ -14,12 +14,8 @@
       "title": "primoPost",
       "content": "contenuto del primo post",
       "type": "image",
-      "tags": [
-        "balcone"
-      ],
-      "mediaUrls": [
-        "/uploads/1780402356910-11_01_2026_canna_fumaria_1.jpeg"
-      ],
+      "tags": ["balcone"],
+      "mediaUrls": ["/uploads/1780402356910-11_01_2026_canna_fumaria_1.jpeg"],
       "date": "2026-06-02T12:12:36.924Z",
       "published": true
     },
@@ -28,9 +24,7 @@
       "title": "video non video",
       "content": "nessun video",
       "type": "video",
-      "tags": [
-        "secondo post martedì"
-      ],
+      "tags": ["secondo post martedì"],
       "mediaUrls": [],
       "date": "2026-06-02T12:15:59.426Z",
       "published": true
@@ -40,9 +34,7 @@
       "title": "a",
       "content": "b",
       "type": "image",
-      "tags": [
-        "c"
-      ],
+      "tags": ["c"],
       "mediaUrls": [],
       "date": "2026-06-06T12:37:32.496Z",
       "published": true

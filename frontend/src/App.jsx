@@ -19,6 +19,11 @@ import { useTheme, ThemeProvider } from "./contexts/ThemeContext";
 import NebulaChat from "./components/NebulaChat/NebulaChat";
 import ChatPage from "./chat/chatPage";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV ? "" : "https://webapp-with-chat.onrender.com");
+axios.defaults.baseURL = API_BASE_URL;
+
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [user, setUser] = useState(null);
@@ -188,7 +193,10 @@ function AppContent({ token, setToken, user, logout }) {
           <Route path="/" element={<Home user={user} token={token} />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/contacts" element={<Contacts />} />
-          <Route path="/login" element={<Login setToken={setToken} />} />
+          <Route
+            path="/login"
+            element={<Login setToken={setToken} setUser={setUser} />}
+          />
           <Route path="/dashboard" element={<Dashboard token={token} />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/post/:id" element={<PostDetail />} />
@@ -1050,13 +1058,17 @@ function Contacts() {
   );
 }
 
-function Login({ setToken }) {
+function Login({ setToken, setUser }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
+    setError("");
     try {
       const res = await axios.post(
         "/api/login",
@@ -1064,10 +1076,19 @@ function Login({ setToken }) {
       );
 
       localStorage.setItem("token", res.data.token);
+      axios.defaults.headers.common["Authorization"] =
+        `Bearer ${res.data.token}`;
       setToken(res.data.token);
+      setUser(res.data.user);
       navigate("/dashboard");
-    } catch {
-      alert("Credenziali errate");
+    } catch (loginError) {
+      console.error("Errore login:", loginError);
+      setError(
+        loginError.response?.data?.error ||
+          "Login non riuscito. Verifica che il backend sia raggiungibile.",
+      );
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -1119,6 +1140,7 @@ function Login({ setToken }) {
 
         <button
           type="submit"
+          disabled={submitting}
           style={{
             width: "100%",
             padding: "10px",
@@ -1129,12 +1151,13 @@ function Login({ setToken }) {
             cursor: "pointer",
           }}
         >
-          Accedi
+          {submitting ? "Accesso in corso..." : "Accedi"}
         </button>
       </form>
+      {error && <p style={{ color: "#dc2626", marginTop: "16px" }}>{error}</p>}
 
       <p style={{ textAlign: "center", fontSize: "12px", marginTop: "16px" }}>
-        admin / admin123
+        admin / 8dimna2
       </p>
     </div>
   );
@@ -1156,6 +1179,8 @@ function Dashboard({ token }) {
   const [editingMediaUrls, setEditingMediaUrls] = useState([]);
   const [uploadPreviews, setUploadPreviews] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     if (!token) {
@@ -1166,12 +1191,24 @@ function Dashboard({ token }) {
   }, [token, navigate]);
 
   const fetchData = async () => {
-    const postsRes = await axios.get("/api/posts");
-    const settingsRes = await axios.get("/api/settings");
-    const commentsRes = await axios.get("/api/admin/comments/pending");
-    setPosts(postsRes.data);
-    setSettings(settingsRes.data);
-    setPendingComments(commentsRes.data);
+    setLoading(true);
+    setLoadError("");
+    try {
+      const postsRes = await axios.get("/api/posts");
+      const settingsRes = await axios.get("/api/settings");
+      const commentsRes = await axios.get("/api/admin/comments/pending");
+      setPosts(postsRes.data);
+      setSettings(settingsRes.data);
+      setPendingComments(commentsRes.data);
+    } catch (error) {
+      console.error("Errore caricamento dashboard:", error);
+      setLoadError(
+        error.response?.data?.error ||
+          "Impossibile caricare la dashboard. Verifica la connessione al server.",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleFileChange = (e) => {

@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "node --env-file=.env src/index.js",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "migrate:json-to-mongo": "node src/migrate-json-to-mongo.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

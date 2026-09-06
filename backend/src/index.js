@@ -14,6 +14,10 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import authRoutes from "./routes/auth.js";
+import User from "./models/User.js";
+import Post from "./models/Post.js";
+import Comment from "./models/Comment.js";
+import SiteSettings from "./models/SiteSettings.js";
 
 import mongoose from "mongoose";
 
@@ -32,7 +36,6 @@ const app = express();
 const JWT_SECRET = process.env.JWT_SECRET || "local-development-secret";
 
 const UPLOADS_DIR = path.join(__dirname, "../uploads");
-const DATA_FILE = path.join(__dirname, "../database.json");
 
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
@@ -91,36 +94,6 @@ function updateUsersOnline() {
   io.emit("usersOnline", users);
 }
 
-function getDB() {
-  if (!fs.existsSync(DATA_FILE)) {
-    const initialDB = {
-      users: [
-        {
-          id: "1",
-          username: "admin",
-          password: bcrypt.hashSync("admin123", 10),
-          email: "admin@test.com",
-          role: "admin",
-        },
-      ],
-      posts: [],
-      comments: [],
-      settings: {
-        site_name: "Il Mio Portfolio Creativo",
-        bio: "Sono un creativo digitale appassionato di fotografia, videoarte e graphic design.",
-        contact_email: "info@miosito.it",
-        gdpr_text: "Questo sito rispetta il GDPR 2026.",
-      },
-    };
-    fs.writeFileSync(DATA_FILE, JSON.stringify(initialDB, null, 2));
-  }
-  return JSON.parse(fs.readFileSync(DATA_FILE));
-}
-
-function saveDB(data) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-}
-
 app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static(UPLOADS_DIR));
@@ -150,10 +123,9 @@ const auth = (req, res, next) => {
 
 // ========== API ROUTES ==========
 
-app.post("/api/login", (req, res) => {
+app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
-  const db = getDB();
-  const user = db.users.find((u) => u.username === username);
+  const user = await User.findOne({ username }).lean();
   if (!user || !bcrypt.compareSync(password, user.password)) {
     return res.status(401).json({ error: "Credenziali errate" });
   }
@@ -164,38 +136,39 @@ app.post("/api/login", (req, res) => {
   });
 });
 
-app.get("/api/settings", (req, res) => {
-  const db = getDB();
-  res.json(db.settings);
+app.get("/api/settings", async (req, res) => {
+  const settings = await SiteSettings.findOne({ key: "site" }).lean();
+  res.json(settings || {});
 });
 
-app.put("/api/settings", auth, (req, res) => {
-  const db = getDB();
-  db.settings = { ...db.settings, ...req.body };
-  saveDB(db);
+app.put("/api/settings", auth, async (req, res) => {
+  const settings = await SiteSettings.findOneAndUpdate(
+    { key: "site" },
+    { $set: { key: "site", ...req.body } },
+    { upsert: true, new: true, setDefaultsOnInsert: true },
+  ).lean();
   res.json({ success: true });
 });
 
-app.get("/api/profile", auth, (req, res) => {
-  const db = getDB();
-  const user = db.users.find((u) => u.id === req.user.id);
+app.get("/api/profile", auth, async (req, res) => {
+  const user = await User.findOne({ id: req.user.id }).lean();
+  if (!user) return res.status(404).json({ error: "Utente non trovato" });
   res.json({ id: user.id, username: user.username, email: user.email });
 });
 
 // POSTS
-app.get("/api/posts", (req, res) => {
-  const db = getDB();
-  res.json(db.posts);
+app.get("/api/posts", async (req, res) => {
+  const posts = await Post.find().sort({ date: -1 }).lean();
+  res.json(posts);
 });
 
-app.get("/api/posts/:id", (req, res) => {
-  const db = getDB();
-  const post = db.posts.find((p) => p.id === req.params.id);
+app.get("/api/posts/:id", async (req, res) => {
+  const post = await Post.findOne({ id: req.params.id }).lean();
   if (!post) return res.status(404).json({ error: "Post non trovato" });
   res.json(post);
 });
 
-app.post("/api/posts", auth, upload.array("media", 5), (req, res) => {
+app.post("/api/posts", auth, upload.array("media", 5), async (req, res) => {
   const { title, content, type, tags } = req.body;
 
   console.log("🔧 BACKEND - Tags ricevuti:", tags); // <-- AGGIUNGI
@@ -203,18 +176,6 @@ app.post("/api/posts", auth, upload.array("media", 5), (req, res) => {
   const mediaUrls = req.files
     ? req.files.map((f) => `/uploads/${f.filename}`)
     : [];
-  const db = getDB();
-
-  // Converte i tags da stringa a array
-  const tagsArray = tags
-    ? tags
-        .split(",")
-        .map((t) => t.trim())
-        .filter((t) => t)
-    : [];
-
-  console.log("🔧 BACKEND - Tags convertiti:", tagsArray); // <-- AGGIUNGI
-
   const newPost = {
     id: uuidv4(),
     title,
@@ -226,42 +187,33 @@ app.post("/api/posts", auth, upload.array("media", 5), (req, res) => {
     published: true,
   };
 
-  console.log("🔧 BACKEND - Nuovo post creato:", newPost); // <-- AGGIUNGI
-
-  db.posts.push(newPost);
-  saveDB(db);
-  res.json(newPost);
+  const savedPost = await Post.create(newPost);
+  res.json(savedPost);
 });
 
-app.put("/api/posts/:id", auth, upload.array("media", 5), (req, res) => {
+app.put("/api/posts/:id", auth, upload.array("media", 5), async (req, res) => {
   const { title, content, type, published, replaceMedia } = req.body;
-  const db = getDB();
-  const index = db.posts.findIndex((p) => p.id === req.params.id);
-  if (index === -1) return res.status(404).json({ error: "Post non trovato" });
+  const post = await Post.findOne({ id: req.params.id });
+  if (!post) return res.status(404).json({ error: "Post non trovato" });
 
   const newMediaUrls = req.files
     ? req.files.map((f) => `/uploads/${f.filename}`)
     : [];
   const replace = replaceMedia === "true";
 
-  db.posts[index] = {
-    ...db.posts[index],
-    title: title || db.posts[index].title,
-    content: content !== undefined ? content : db.posts[index].content,
-    type: type || db.posts[index].type,
-    published: published !== undefined ? published : db.posts[index].published,
-    mediaUrls: replace
-      ? newMediaUrls
-      : [...(db.posts[index].mediaUrls || []), ...newMediaUrls],
-  };
-  saveDB(db);
-  res.json(db.posts[index]);
+  post.title = title || post.title;
+  post.content = content !== undefined ? content : post.content;
+  post.type = type || post.type;
+  post.published = published !== undefined ? published : post.published;
+  post.mediaUrls = replace
+    ? newMediaUrls
+    : [...(post.mediaUrls || []), ...newMediaUrls];
+  await post.save();
+  res.json(post);
 });
 
-app.delete("/api/posts/:id", auth, (req, res) => {
-  const db = getDB();
-  db.posts = db.posts.filter((p) => p.id !== req.params.id);
-  saveDB(db);
+app.delete("/api/posts/:id", auth, async (req, res) => {
+  await Post.deleteOne({ id: req.params.id });
   res.json({ success: true });
 });
 
@@ -289,27 +241,24 @@ app.delete("/api/gdpr/data", auth, (req, res) => {
 // ========== COMMENTI ==========
 
 // GET commenti approvati per un post
-app.get("/api/posts/:postId/comments", (req, res) => {
-  const db = getDB();
-  if (!db.comments) db.comments = [];
-  const comments = db.comments
-    .filter((c) => c.post_id === req.params.postId && c.status === "approved")
-    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+app.get("/api/posts/:postId/comments", async (req, res) => {
+  const comments = await Comment.find({
+    post_id: req.params.postId,
+    status: "approved",
+  })
+    .sort({ created_at: -1 })
+    .lean();
   res.json(comments);
 });
 
 // POST nuovo commento
-app.post("/api/posts/:postId/comments", (req, res) => {
+app.post("/api/posts/:postId/comments", async (req, res) => {
   const { author_name, author_email, content } = req.body;
   const { postId } = req.params;
 
   if (!author_name || !content) {
     return res.status(400).json({ error: "Nome e commento sono obbligatori" });
   }
-
-  const db = getDB();
-
-  if (!db.comments) db.comments = [];
 
   const newComment = {
     id: Date.now().toString(),
@@ -321,11 +270,7 @@ app.post("/api/posts/:postId/comments", (req, res) => {
     created_at: new Date().toISOString(),
   };
 
-  // Assicurati che db.comments esista
-  if (!db.comments) db.comments = [];
-
-  db.comments.push(newComment);
-  saveDB(db);
+  await Comment.create(newComment);
   res.json({
     success: true,
     message: "Commento inviato, in attesa di approvazione",
@@ -333,30 +278,25 @@ app.post("/api/posts/:postId/comments", (req, res) => {
 });
 
 // GET commenti in attesa (solo admin)
-app.get("/api/admin/comments/pending", auth, (req, res) => {
-  const db = getDB();
-  const pending = (db.comments || [])
-    .filter((c) => c.status === "pending")
-    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+app.get("/api/admin/comments/pending", auth, async (req, res) => {
+  const pending = await Comment.find({ status: "pending" })
+    .sort({ created_at: -1 })
+    .lean();
   res.json(pending);
 });
 
 // APPROVA commento
-app.put("/api/admin/comments/:id/approve", auth, (req, res) => {
-  const db = getDB();
-  const comment = db.comments.find((c) => c.id === req.params.id);
-  if (comment) {
-    comment.status = "approved";
-    saveDB(db);
-  }
+app.put("/api/admin/comments/:id/approve", auth, async (req, res) => {
+  await Comment.updateOne(
+    { id: req.params.id },
+    { $set: { status: "approved" } },
+  );
   res.json({ success: true });
 });
 
 // ELIMINA commento
-app.put("/api/admin/comments/:id/reject", auth, (req, res) => {
-  const db = getDB();
-  db.comments = db.comments.filter((c) => c.id !== req.params.id);
-  saveDB(db);
+app.put("/api/admin/comments/:id/reject", auth, async (req, res) => {
+  await Comment.deleteOne({ id: req.params.id });
   res.json({ success: true });
 });
 
