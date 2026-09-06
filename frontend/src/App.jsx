@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  BrowserRouter,
+  HashRouter,
   Routes,
   Route,
   Link,
@@ -46,14 +46,14 @@ function App() {
   };
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <AppContent
         token={token}
         setToken={setToken}
         user={user}
         logout={logout}
       />
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
@@ -1070,10 +1070,7 @@ function Login({ setToken, setUser }) {
     setSubmitting(true);
     setError("");
     try {
-      const res = await axios.post(
-        "/api/login",
-        { username, password },
-      );
+      const res = await axios.post("/api/login", { username, password });
 
       localStorage.setItem("token", res.data.token);
       axios.defaults.headers.common["Authorization"] =
@@ -1155,10 +1152,10 @@ function Login({ setToken, setUser }) {
         </button>
       </form>
       {error && <p style={{ color: "#dc2626", marginTop: "16px" }}>{error}</p>}
-
+      {/* 
       <p style={{ textAlign: "center", fontSize: "12px", marginTop: "16px" }}>
         admin / 8dimna2
-      </p>
+      </p> */}
     </div>
   );
 }
@@ -1279,10 +1276,7 @@ function Dashboard({ token }) {
         const replace = confirm("Vuoi SOSTITUIRE le immagini esistenti?");
         fd.append("replaceMedia", replace);
 
-        await axios.put(
-          `/api/posts/${editingId}`,
-          fd,
-        );
+        await axios.put(`/api/posts/${editingId}`, fd);
 
         alert("Post modificato con successo!");
       } else {
@@ -1302,27 +1296,20 @@ function Dashboard({ token }) {
   // 🔧 CANCELLAZIONE POST
   const handleDeletePost = async (id) => {
     if (confirm("Cancellare questo post?")) {
-      await axios.delete(
-        `/api/posts/${id}`,
-      );
+      await axios.delete(`/api/posts/${id}`);
       await fetchData();
     }
   };
 
   // 🔧 SALVATAGGIO SETTINGS
   const handleSaveSettings = async () => {
-    await axios.put(
-      "/api/settings",
-      settings,
-    );
+    await axios.put("/api/settings", settings);
     alert("Impostazioni salvate!");
   };
 
   // 🔧 APPROVA COMMENTO
   const approveComment = async (id) => {
-    await axios.put(
-      `/api/admin/comments/${id}/approve`,
-    );
+    await axios.put(`/api/admin/comments/${id}/approve`);
 
     setPendingComments(pendingComments.filter((c) => c.id !== id));
     alert("Commento approvato!");
@@ -1333,9 +1320,7 @@ function Dashboard({ token }) {
     if (
       confirm("Rifiutare questo commento? Verrà eliminato permanentemente.")
     ) {
-      await axios.delete(
-        `/api/admin/comments/${id}`,
-      );
+      await axios.delete(`/api/admin/comments/${id}`);
 
       setPendingComments(pendingComments.filter((c) => c.id !== id));
       alert("Commento rifiutato ed eliminato");
@@ -1344,9 +1329,7 @@ function Dashboard({ token }) {
 
   // 🔧 ESPORTAZIONE GDPR
   const exportData = async () => {
-    const res = await axios.get(
-      "/api/gdpr/export",
-    );
+    const res = await axios.get("/api/gdpr/export");
 
     const dataStr = JSON.stringify(res.data, null, 2);
     const blob = new Blob([dataStr], { type: "application/json" });

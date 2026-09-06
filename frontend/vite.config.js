@@ -2,17 +2,14 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
+  base: "/webapp_with_chat/",
   plugins: [react()],
   server: {
     host: true,
     port: 5175,
     proxy: {
-      "/api": "http://localhost:5001",
-      "/uploads": "http://localhost:5001",
-      "/socket.io": {
-        target: "http://localhost:5001",
-        ws: true,
-      },
+      "/api": "http://localhost:5000",
+      "/uploads": "http://localhost:5000",
     },
   },
   preview: {
