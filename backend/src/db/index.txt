@@ -13,7 +13,7 @@ const __dirname = path.dirname(__dirname);
 
 const app = express();
 const PORT = 5000;
-const JWT_SECRET = "my-super-secret-key-2026";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Cartelle
 const UPLOADS_DIR = path.join(__dirname, "uploads");
@@ -30,7 +30,7 @@ function getDB() {
         {
           id: "1",
           username: "admin",
-          password: bcrypt.hashSync("8dimna2", 10),
+          password: bcrypt.hashSync(process.env.ADMIN_PASSWORD, 12),
           email: "admin@test.com",
           role: "admin",
         },

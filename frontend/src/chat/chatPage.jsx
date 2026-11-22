@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
+import { apiUrl } from "../api";
 
-const socket = io({
+const socket = io(apiUrl || undefined, {
   autoConnect: false,
 });
 

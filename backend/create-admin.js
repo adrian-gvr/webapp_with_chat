@@ -1,28 +1,58 @@
+import "dotenv/config";
 import bcrypt from "bcryptjs";
-import fs from "fs";
+import mongoose from "mongoose";
+import { v4 as uuidv4 } from "uuid";
+import User from "./src/models/User.js";
+import SiteSettings from "./src/models/SiteSettings.js";
 
-const hashedPassword = bcrypt.hashSync("8dimna2", 10);
+const { MONGO_URI, ADMIN_USERNAME, ADMIN_EMAIL, ADMIN_PASSWORD } = process.env;
 
-const db = {
-  users: [
+if (!MONGO_URI || !ADMIN_USERNAME || !ADMIN_EMAIL || !ADMIN_PASSWORD) {
+  throw new Error(
+    "Configura MONGO_URI, ADMIN_USERNAME, ADMIN_EMAIL e ADMIN_PASSWORD prima di creare l'admin.",
+  );
+}
+
+if (ADMIN_PASSWORD.length < 12) {
+  throw new Error("ADMIN_PASSWORD deve contenere almeno 12 caratteri.");
+}
+
+try {
+  await mongoose.connect(MONGO_URI);
+
+  const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 12);
+  await User.findOneAndUpdate(
+    { username: ADMIN_USERNAME },
     {
-      id: "1",
-      username: "admin",
-      password: hashedPassword,
-      email: "admin@test.com",
-      role: "admin",
+      $set: {
+        username: ADMIN_USERNAME,
+        email: ADMIN_EMAIL,
+        password: passwordHash,
+        role: "admin",
+      },
+      $setOnInsert: { id: uuidv4() },
     },
-  ],
-  posts: [],
-  settings: {
-    site_name: "Il Mio Portfolio Creativo",
-    bio: "Sono un creativo digitale appassionato di fotografia, videoarte e graphic design.",
-    contact_email: "info@miosito.it",
-    gdpr_text: "Questo sito rispetta il GDPR 2026.",
-  },
-};
+    { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true },
+  );
 
-fs.writeFileSync("database.json", JSON.stringify(db, null, 2));
-console.log("✅ Admin creato con successo!");
-console.log("Username: admin");
-console.log("Password aggiornata.");
+  await SiteSettings.findOneAndUpdate(
+    { key: "site" },
+    {
+      $setOnInsert: {
+        site_name: process.env.SITE_NAME || "Il Mio Portfolio Creativo",
+        bio:
+          process.env.SITE_BIO ||
+          "Portfolio creativo di fotografia, videoarte e graphic design.",
+        contact_email: process.env.SITE_CONTACT_EMAIL || "",
+        gdpr_text:
+          process.env.GDPR_TEXT ||
+          "Questo sito tratta i dati personali secondo la normativa applicabile.",
+      },
+    },
+    { upsert: true, setDefaultsOnInsert: true },
+  );
+
+  console.log(`Account amministratore "${ADMIN_USERNAME}" pronto in MongoDB.`);
+} finally {
+  await mongoose.disconnect();
+}

@@ -13,7 +13,6 @@ function PostDetail() {
     axios
       .get(`/api/posts/${id}`)
       .then((res) => {
-        console.log("Post ricevuto:", res.data);
         setPost(res.data);
         setLoading(false);
       })

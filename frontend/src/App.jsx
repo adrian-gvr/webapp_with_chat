@@ -8,7 +8,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import axios from "axios";
-import { mediaUrl } from "./api";
+import { apiUrl, mediaUrl } from "./api";
 import Privacy from "./pages/Privacy";
 import PostDetail from "./pages/PostDetail";
 import NotFound from "./pages/NotFound";
@@ -19,10 +19,7 @@ import { useTheme, ThemeProvider } from "./contexts/ThemeContext";
 import NebulaChat from "./components/NebulaChat/NebulaChat";
 import ChatPage from "./chat/chatPage";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ||
-  (import.meta.env.DEV ? "" : "https://webapp-with-chat.onrender.com");
-axios.defaults.baseURL = API_BASE_URL;
+axios.defaults.baseURL = apiUrl;
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -229,9 +226,6 @@ function Home({ user, token }) {
   const goToBlogWithFilter = (filterType) => {
     navigate(`/blog?filter=${filterType}`);
   };
-  console.log("HOME USER:", user);
-  console.log("HOME TOKEN:", token);
-
   return (
     <>
       <SEO
@@ -1153,10 +1147,6 @@ function Login({ setToken, setUser }) {
         </button>
       </form>
       {error && <p style={{ color: "#dc2626", marginTop: "16px" }}>{error}</p>}
-      {/* 
-      <p style={{ textAlign: "center", fontSize: "12px", marginTop: "16px" }}>
-        admin / 8dimna2
-      </p> */}
     </div>
   );
 }
@@ -1258,16 +1248,17 @@ function Dashboard({ token }) {
   const handleSavePost = async (e) => {
     e.preventDefault();
 
-    console.log("📤 Valore di form.tags PRIMA dell'invio:", form.tags);
-
     setSaving(true);
     const fd = new FormData();
+    const normalizedTags = (form.tags || "")
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+
     fd.append("title", form.title);
     fd.append("content", form.content);
     fd.append("type", form.type);
-    fd.append("tags", form.tags || "");
-
-    console.log("📤 Tags inviati nel FormData:", form.tags); // <-- LOG
+    fd.append("tags", JSON.stringify(normalizedTags));
 
     form.mediaFiles.forEach((file) => fd.append("media", file));
 

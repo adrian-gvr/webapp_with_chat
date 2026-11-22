@@ -6,8 +6,10 @@ function SEO({ title, description, image, url, type = "website" }) {
   const fullTitle = title ? `${title} | ${siteTitle}` : siteTitle;
   const defaultDescription =
     "Portfolio creativo di fotografia, videoarte e graphic design. Scopri i miei lavori e contattami per collaborazioni.";
-  const siteUrl = "http://localhost:5173";
-  const defaultImage = `${siteUrl}/og-image.jpg`;
+  const siteUrl =
+    typeof window === "undefined"
+      ? "https://adrian-gvr.github.io/webapp_with_chat/"
+      : `${window.location.origin}${import.meta.env.BASE_URL}`;
 
   return (
     <Helmet>
@@ -22,7 +24,7 @@ function SEO({ title, description, image, url, type = "website" }) {
         property="og:description"
         content={description || defaultDescription}
       />
-      <meta property="og:image" content={image || defaultImage} />
+      {image && <meta property="og:image" content={image} />}
       <meta property="og:url" content={url || siteUrl} />
       <meta property="og:site_name" content={siteTitle} />
 
@@ -33,7 +35,7 @@ function SEO({ title, description, image, url, type = "website" }) {
         name="twitter:description"
         content={description || defaultDescription}
       />
-      <meta name="twitter:image" content={image || defaultImage} />
+      {image && <meta name="twitter:image" content={image} />}
 
       {/* Altri meta */}
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />

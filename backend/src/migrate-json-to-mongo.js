@@ -15,7 +15,7 @@ const DATA_FILE = path.join(__dirname, "../database.json");
 const CONTACTS_FILE = path.join(__dirname, "../contacts.json");
 const UPLOADS_DIR = path.join(__dirname, "../uploads");
 const PUBLIC_BACKEND_URL = (
-  process.env.PUBLIC_BACKEND_URL || "https://webapp-with-chat.onrender.com"
+  process.env.PUBLIC_BACKEND_URL || process.env.RENDER_EXTERNAL_URL || ""
 ).replace(/\/$/, "");
 
 const data = JSON.parse(await fs.readFile(DATA_FILE, "utf8"));

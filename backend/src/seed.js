@@ -9,6 +9,9 @@ const __dirname = path.dirname(__filename);
 const DB_PATH = path.join(__dirname, "../../blog.db");
 
 async function seed() {
+  if (!process.env.ADMIN_PASSWORD) {
+    throw new Error("Imposta ADMIN_PASSWORD prima di eseguire il seed legacy.");
+  }
   console.log("🌱 Inizializzazione seed...");
 
   const SQL = await initSqlJs({
@@ -72,7 +75,7 @@ async function seed() {
   }
 
   if (!userExists) {
-    const hashedPassword = await bcrypt.hash("8dimna2", 10);
+    const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 12);
     db.run(
       `
       INSERT INTO users (username, password, email, role, created_at) 
